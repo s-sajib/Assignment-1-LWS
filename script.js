@@ -1,4 +1,4 @@
-// select dom elements
+// select add Match elements
 const addMatchButton = document.querySelector(".lws-addMatch");
 addMatchButton.addEventListener("click", addMatch);
 
@@ -14,21 +14,22 @@ function matchReducer(state = initialState, action) {
   if (action.type === "add") {
     return [...state, { value: 120 }];
   } else if (action.type === "increment") {
-    console.log("increment Hit");
-    // let duplicateState = [...state];
-    // duplicateState[action.payload.index] = {
-    //   value: duplicateState[action.payload.index] + 1,
-    // };
-
-    // return duplicateState;
+    let duplicateState = [...state];
+    duplicateState[action.payload.index] = {
+      value:
+        Number(duplicateState[action.payload.index].value) +
+        Number(action.payload.value),
+    };
+    return duplicateState;
   } else if (action.type === "decrement") {
-    //   let duplicateState = [...state];
-    //   duplicateState[action.payload.index] = {
-    //     value: duplicateState[action.payload.index] - 1,
-    //   };
-
-    //   return duplicateState;
-    console.log("decrement hit");
+    let duplicateState = [...state];
+    const result =
+      Number(duplicateState[action.payload.index].value) -
+      Number(action.payload.value);
+    duplicateState[action.payload.index] = {
+      value: result < 0 ? 0 : result,
+    };
+    return duplicateState;
   } else {
     return state;
   }
@@ -37,6 +38,7 @@ function matchReducer(state = initialState, action) {
 // create store
 const store = Redux.createStore(matchReducer);
 
+// to render Rows
 const renderRows = () => {
   const currentStates = store.getState();
   const matchContainer = document.getElementById("matchContainer");
@@ -44,64 +46,96 @@ const renderRows = () => {
   if (currentStates.length === 1) {
     matchContainer.innerHTML = "";
   }
-
   currentStates.map((state, index) => {
     clonedMatch.querySelector(".lws-matchName").innerText = `Match ${
       index + 1
     }`;
     clonedMatch
       .querySelector(".lws-increment")
+      .setAttribute("name", `increment-${index + 1}`);
+    clonedMatch
+      .querySelector(".lws-increment")
       .setAttribute("id", `increment-${index + 1}`);
+
+    clonedMatch.querySelector(".lws-increment").value = null;
+
     clonedMatch
       .querySelector(".lws-decrement")
-      .setAttribute("id", `decrement-${index + 1}`);
+      .setAttribute("name", `decrement-${index + 1}`);
+    clonedMatch.querySelector(".lws-decrement").value = null;
     clonedMatch.querySelector(".lws-singleResult").innerText = state.value;
+    clonedMatch
+      .querySelector(".lws-singleResult")
+      .setAttribute("name", `result-${index + 1}`);
     matchContainer.appendChild(clonedMatch);
   });
+  document
+    .querySelectorAll(".lws-increment")
+    ?.forEach((field) => field.addEventListener("keydown", increaseScore));
+  document
+    .querySelectorAll(".incrementForm")
+    ?.forEach((field) =>
+      field.addEventListener("submit", (event) => event.preventDefault())
+    );
+  document
+    .querySelectorAll(".lws-decrement")
+    ?.forEach((field) => field.addEventListener("keydown", decreaseScore));
+  document
+    .querySelectorAll(".decrementForm")
+    ?.forEach((field) =>
+      field.addEventListener("submit", (event) => event.preventDefault())
+    );
 };
+
 renderRows();
+
 function addMatch() {
   store.dispatch({ type: "add" });
   renderRows();
-  // clonedMatch.classList.remove("hidden");
-
-  // matchContainer.appendChild(clonedMatch);
-
-  // console.log(matches[0].setAttribute("id", "match-1"));
-  // console.log(
-  //   matches[0]
-  //     .getElementsByClassName("lws-increment")[0]
-  //     .setAttribute("id", "match-1-increment")
-  // );
-
-  // matches[0]
-  //   .getElementsByClassName("lws-singleResult")[0]
-  //   .setAttribute("id", "match-1-result");
-
-  // console.log(
-  //   matches[0]
-  //     .getElementsByClassName("lws-decrement")[0]
-  //     .setAttribute("id", "match-1-decrement")
-  // );
 }
-// const counterEl = document.getElementsByClassName("counter");
-// const incrementButton = document.getElementsByClassName("lws-increment");
-// const decrementButton = document.getElementsByClassName("lws-decrement");
 
-// // update UI initially
-// render();
+function increaseScore(event) {
+  if (event.key === "Enter" || event.key === "Enter") {
+    store.dispatch({
+      type: "increment",
+      payload: {
+        index: Number(event.target.name.split("-")[1]) - 1,
+        value: event.target.value,
+      },
+    });
+  }
+}
+function decreaseScore(event) {
+  if (event.key === "Enter" || event.key === "Enter") {
+    store.dispatch({
+      type: "decrement",
+      payload: {
+        index: Number(event.target.name.split("-")[1]) - 1,
+        value: event.target.value,
+      },
+    });
+  }
+}
 
-// store.subscribe(render);
+function logger() {
+  // console.log("Logger:", store.getState());
+  updateScores();
+}
 
-// // button click listeners
-// incrementEl.addEventListener("click", () => {
-//   store.dispatch({
-//     type: "increment",
-//   });
-// });
+function updateScores() {
+  const scoreElements = document.querySelectorAll(".lws-singleResult");
+  const scores = store.getState();
+  scoreElements?.forEach((scoreElement, index) => {
+    scoreElement.innerText = scores[index].value;
+  });
+}
 
-// decrementEl.addEventListener("click", () => {
-//   store.dispatch({
-//     type: "decrement",
-//   });
-// });
+function cleanInputFields() {
+  const incrementFields = document.querySelectorAll(".lws-increment");
+  const decrementFields = document.querySelectorAll(".lws-decrement");
+  incrementFields?.forEach((field) => (field.value = null));
+  decrementFields?.forEach((field) => (field.value = null));
+}
+
+store.subscribe(updateScores);
+store.subscribe(cleanInputFields);
