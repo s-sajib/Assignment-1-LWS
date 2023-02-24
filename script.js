@@ -2,6 +2,8 @@
 const addMatchButton = document.querySelector(".lws-addMatch");
 addMatchButton.addEventListener("click", addMatch);
 
+const resetButton = document.querySelector(".lws-reset");
+resetButton.addEventListener("click", reset);
 // initial state
 const initialState = [
   {
@@ -29,6 +31,10 @@ function matchReducer(state = initialState, action) {
     duplicateState[action.payload.index] = {
       value: result < 0 ? 0 : result,
     };
+    return duplicateState;
+  } else if (action.type === "reset") {
+    let duplicateState = [...state];
+    duplicateState.map((state) => (state.value = 120));
     return duplicateState;
   } else {
     return state;
@@ -117,11 +123,6 @@ function decreaseScore(event) {
   }
 }
 
-function logger() {
-  // console.log("Logger:", store.getState());
-  updateScores();
-}
-
 function updateScores() {
   const scoreElements = document.querySelectorAll(".lws-singleResult");
   const scores = store.getState();
@@ -135,6 +136,10 @@ function cleanInputFields() {
   const decrementFields = document.querySelectorAll(".lws-decrement");
   incrementFields?.forEach((field) => (field.value = null));
   decrementFields?.forEach((field) => (field.value = null));
+}
+
+function reset() {
+  store.dispatch({ type: "reset" });
 }
 
 store.subscribe(updateScores);
