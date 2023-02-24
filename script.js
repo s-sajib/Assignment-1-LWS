@@ -56,7 +56,7 @@ function matchReducer(state = initialState, action) {
 const store = Redux.createStore(matchReducer);
 
 // to Add and re render Rows
-const renderRows = () => {
+function renderRows() {
   const currentStates = store.getState();
   const matchContainer = document.getElementById("matchContainer");
   const clonedMatch = document.querySelector(".match").cloneNode(true);
@@ -102,7 +102,7 @@ const renderRows = () => {
     ?.forEach((field) =>
       field.addEventListener("submit", (event) => event.preventDefault())
     );
-};
+}
 
 //Initial Load
 renderRows();
