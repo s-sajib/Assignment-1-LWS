@@ -1,10 +1,14 @@
-// select add Match elements
+// select "Add Match" button element and attach "click" event listener to it
 const addMatchButton = document.querySelector(".lws-addMatch");
 addMatchButton.addEventListener("click", addMatch);
 
+// select "Reset" button element and attach "click" event listener to it
 const resetButton = document.querySelector(".lws-reset");
 resetButton.addEventListener("click", reset);
-// initial state
+
+//Set up Redux
+
+// define initial state
 const initialState = [
   {
     value: 120,
@@ -13,9 +17,12 @@ const initialState = [
 
 // create reducer function
 function matchReducer(state = initialState, action) {
+  //Add
   if (action.type === "add") {
     return [...state, { value: 120 }];
-  } else if (action.type === "increment") {
+  }
+  // Increment
+  else if (action.type === "increment") {
     let duplicateState = [...state];
     duplicateState[action.payload.index] = {
       value:
@@ -23,7 +30,9 @@ function matchReducer(state = initialState, action) {
         Number(action.payload.value),
     };
     return duplicateState;
-  } else if (action.type === "decrement") {
+  }
+  //Decrement
+  else if (action.type === "decrement") {
     let duplicateState = [...state];
     const result =
       Number(duplicateState[action.payload.index].value) -
@@ -32,7 +41,9 @@ function matchReducer(state = initialState, action) {
       value: result < 0 ? 0 : result,
     };
     return duplicateState;
-  } else if (action.type === "reset") {
+  }
+  //reset
+  else if (action.type === "reset") {
     let duplicateState = [...state];
     duplicateState.map((state) => (state.value = 120));
     return duplicateState;
@@ -44,7 +55,7 @@ function matchReducer(state = initialState, action) {
 // create store
 const store = Redux.createStore(matchReducer);
 
-// to render Rows
+// to Add and re render Rows
 const renderRows = () => {
   const currentStates = store.getState();
   const matchContainer = document.getElementById("matchContainer");
@@ -93,13 +104,16 @@ const renderRows = () => {
     );
 };
 
+//Initial Load
 renderRows();
 
+//Add a Match / Row
 function addMatch() {
   store.dispatch({ type: "add" });
   renderRows();
 }
 
+//Increase Score
 function increaseScore(event) {
   if (event.key === "Enter" || event.key === "Enter") {
     store.dispatch({
@@ -111,6 +125,8 @@ function increaseScore(event) {
     });
   }
 }
+
+//Decrease Score
 function decreaseScore(event) {
   if (event.key === "Enter" || event.key === "Enter") {
     store.dispatch({
@@ -123,6 +139,7 @@ function decreaseScore(event) {
   }
 }
 
+//Update Score to UI
 function updateScores() {
   const scoreElements = document.querySelectorAll(".lws-singleResult");
   const scores = store.getState();
@@ -131,6 +148,7 @@ function updateScores() {
   });
 }
 
+//Form Cleanup
 function cleanInputFields() {
   const incrementFields = document.querySelectorAll(".lws-increment");
   const decrementFields = document.querySelectorAll(".lws-decrement");
@@ -138,9 +156,11 @@ function cleanInputFields() {
   decrementFields?.forEach((field) => (field.value = null));
 }
 
+//Reset Match Scores
 function reset() {
   store.dispatch({ type: "reset" });
 }
 
+//Reactivity
 store.subscribe(updateScores);
 store.subscribe(cleanInputFields);
